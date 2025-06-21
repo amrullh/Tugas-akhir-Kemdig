@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
         ? [MateriListPage(isAdmin: true), UploadPage(), ProfilePage()]
         : [MateriListPage(isAdmin: false), NotificationPage(), ProfilePage()];
 
-    // --- CUSTOM BOTTOM NAVBAR ---
+    
     return Scaffold(
       body: pages[_selectedIndex],
       backgroundColor: Colors.white,

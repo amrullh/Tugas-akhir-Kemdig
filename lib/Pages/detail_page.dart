@@ -3,7 +3,7 @@ import 'encryption_helper.dart';
 
 class DetailPage extends StatelessWidget {
   final String judul;
-  final String deskripsi; // isinya masih decrypt
+  final String deskripsi; 
 
   const DetailPage({required this.judul, required this.deskripsi, Key? key})
       : super(key: key);

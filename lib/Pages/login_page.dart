@@ -24,18 +24,15 @@ class _LoginPageState extends State<LoginPage> {
             password: passwordController.text.trim(),
           );
 
-      // --- Ambil UID dan email
       final uid = userCredential.user!.uid;
       final email = userCredential.user!.email ?? '';
 
-      // --- Ambil nama user dari Firestore (collection users)
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
           .get();
       final nama = userDoc.data()?['nama'] ?? '';
 
-      // --- Catat ke collection login_logs
       await FirebaseFirestore.instance.collection('login_logs').add({
         'uid': uid,
         'email': email,
@@ -44,17 +41,15 @@ class _LoginPageState extends State<LoginPage> {
       });
       print('>>> Berhasil menulis login_logs ke Firestore');
 
-      // --- Tampilkan pesan, lalu pindah halaman (jangan pakai setState lagi)
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login sukses! Selamat datang, $nama')),
       );
-      // Delay sedikit supaya user lihat snackbar
+      
       await Future.delayed(const Duration(milliseconds: 700));
-
-      // Pindah ke halaman utama atau tutup halaman login, **tidak perlu setState lagi**
+      
       if (mounted)
-        Navigator.pop(context); // atau pushReplacement ke halaman utama
+        Navigator.pop(context); 
     } on FirebaseAuthException catch (e) {
       String message = "Login gagal: ";
       if (e.code == 'user-not-found') {

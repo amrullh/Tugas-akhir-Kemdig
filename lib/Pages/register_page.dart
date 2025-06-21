@@ -1,3 +1,4 @@
+import 'package:auth_test/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,7 +33,10 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Register sukses! Silakan login.')),
       );
-      Navigator.pop(context); // balik ke login page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,

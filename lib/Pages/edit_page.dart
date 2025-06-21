@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'encryption_helper.dart';
 
 class EditPage extends StatefulWidget {
   final String docId;
   final String initialJudul;
-  final String initialDeskripsi;
+  final String initialDeskripsi; // ini masih terenkripsi!
 
   const EditPage({
     required this.docId,
@@ -26,30 +28,40 @@ class _EditPageState extends State<EditPage> {
   void initState() {
     super.initState();
     judulController = TextEditingController(text: widget.initialJudul);
-    deskripsiController = TextEditingController(text: widget.initialDeskripsi);
+    // DESKRIPSI di-decrypt dulu sebelum masuk ke controller
+    deskripsiController = TextEditingController(
+      text: EncryptionHelper.decrypt(widget.initialDeskripsi),
+    );
   }
 
-  Future<void> handleEdit() async {
+  Future<void> updateMateri() async {
+    if (judulController.text.isEmpty || deskripsiController.text.isEmpty)
+      return;
     setState(() => isLoading = true);
     try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final encryptedDesc = EncryptionHelper.encrypt(deskripsiController.text);
+
       await FirebaseFirestore.instance
           .collection('materi')
           .doc(widget.docId)
           .update({
-        'judul': judulController.text.trim(),
-        'deskripsi': deskripsiController.text.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      Navigator.pop(context); // Balik ke list setelah update
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Materi berhasil diupdate!')),
-      );
+            'judul': judulController.text,
+            'deskripsi': encryptedDesc,
+            'updatedBy': uid,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Materi berhasil diupdate!")));
+      Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal update: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -58,26 +70,30 @@ class _EditPageState extends State<EditPage> {
     return Scaffold(
       appBar: AppBar(title: Text('Edit Materi')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: judulController,
-              decoration: InputDecoration(labelText: 'Judul Materi'),
+              decoration: InputDecoration(labelText: "Judul Materi"),
             ),
             SizedBox(height: 12),
             TextField(
               controller: deskripsiController,
-              maxLines: 4,
-              decoration: InputDecoration(labelText: 'Deskripsi'),
+              decoration: InputDecoration(labelText: "Isi Materi"),
+              minLines: 3,
+              maxLines: 10,
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 20),
             isLoading
                 ? CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: handleEdit,
-                    child: Text('Update Materi',style: TextStyle(color: Colors.black),),
+                    onPressed: updateMateri,
+                    child: Text(
+                      "Update Materi",
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
           ],
         ),
