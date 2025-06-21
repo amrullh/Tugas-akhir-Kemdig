@@ -31,7 +31,7 @@ class AuthGate extends StatelessWidget {
           return LoginPage();
         } else {
           final uid = snapshot.data!.uid;
-          print('>>> LOGIN UID: $uid'); 
+          print('>>> LOGIN UID: $uid');
           return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
             future: FirebaseFirestore.instance
                 .collection('users')
@@ -50,16 +50,14 @@ class AuthGate extends StatelessWidget {
                 );
               }
               final userData = userSnapshot.data!.data();
-              print(
-                '>>> USER DATA: $userData',
-              ); 
+              print('>>> USER DATA: $userData');
               print('>>> USER DATA KEYS: ${userData?.keys}');
-              
+
               if (!userData!.containsKey('role')) {
                 print('>>> FIELD role TIDAK ADA DI FIrestore!');
               }
               final role = userData['role'] ?? 'student';
-              print('>>> ROLE YANG DIAMBIL: $role'); 
+              print('>>> ROLE YANG DIAMBIL: $role');
               return HomePage(role: role);
             },
           );
